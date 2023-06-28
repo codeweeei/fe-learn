@@ -44,6 +44,23 @@ function _instanceOf(obj, type) {
   }
 }
 ```
+### Object.prototype.toString.call()
+`Object.prototype.toString`来判断类型是最合适的，使用它我们几乎可以判断任何类型的数据
+```js
+// 通用的判断数据类型
+function getType(obj) {
+  let type = typeof obj
+  if(type !== 'object') {
+    return type
+  }
+  return Object.prototype.toString.call(obj).replace(/^\[object (\S+)\]$/, '$1')
+}
+
+console.log(getType([])) // Array
+console.log(getType(() => {})) // function
+console.log(getType(null)) // Null
+```
+
 ## 数据类型转换
 ### 类型转换
 |原始值|转换目标|结果|

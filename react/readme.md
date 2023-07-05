@@ -253,3 +253,377 @@ ahooks：https://ahooks.gitee.io/zh-CN
 ### 闭包陷阱
 当异步函数获取state时，可能不是当前最新的state值，可使用useRef及useEffect来规避； 
 可以在state值更改时，将state值存在useRef定义的ref（引用类型）中，然后异步中取ref的current值就能取到最新的值；
+
+## 样式
+### 引用css
+- 使用内联style（不推荐）
+    - 使用{}语法，使用驼峰标识符
+- 引入css文件
+    - jsx使用className
+```js
+let itemClassName = 'list-item'
+if(isPublished) itemClassName += ' published'
+```
+    - 使用`classnames`包（https://github.com/JedWatson/classnames）
+```js
+import classnames from 'classnames'
+let itemClassName = classnames('list-item', {
+    published: isPublished
+})
+let itemClassName = classname({
+    'list-item': true,
+    published: isPublished
+})
+```
+### css module
+- react使用组件化开发，多个组件需要多个css文件，多个css文件就很容易造成className重复，不好管理；
+- css模块：每个css文件都当作单独的模块，命令xxx.module.css，为每个className增加后缀名，不让它重复，create-react-app原生支持css module;
+- 使用：
+```js
+import styles from 'test.module.css'
+styles['class-name']
+```
+### 使用sass
+- css语法比较原始，不能嵌套；一般使用less和sass语法；CRA原生支持sass module，后缀改为.scss即可 
+### 使用 css-in-js
+- 一种解决方案，有好几个工具；在JS中写css，有很大的灵活性；
+styled-components（https://github.com/styled-components/styled-components）
+- demo.module.scss
+```scss
+.content {
+    display: flex;
+    .left {
+        flex: 1;
+    }
+    .right: {
+        width: 40px;
+    }
+}
+- `demo.jsx`
+```jsx
+import styles from './demo.module.scss'
+function Demo() {
+    return (
+        <>
+            <div className={styles.content}>
+                <div className={styles.left}><div>
+                <div className={styles.left}><div>
+            </div
+        </>
+    )
+}
+``` 
+## react-router
+### 安装包
+- 安装react-router-dom：`npm i react-router-dom`
+### 路由
+- 抽离项目页面中的公共部分组成layout组件：顶部、底部，中间内容动态页面(vue-插槽|react-Outlet)；
+- 使用React-router配置路由，并用于项目；
+- 使用路由功能，配置页面及路由映射关系；
+
+### layout
+- 使用 `Outlet` 实现类似vue的slot
+- 样例
+```tsx
+import React, {FC} from 'react'
+import { Outlet } from 'react-router-dom'
+const MainLayout:FC = () => {
+    return (
+        <>
+            <div>MainLayout header</div>
+            <div>
+                {/* 插槽 */}
+                <Outlet></Outlet>
+            </div>
+            <div>MainLayout footer</div>
+        </>
+    )
+}
+export default MainLayout
+```
+
+### 配置路由
+- src/router/index.tsx
+```tsx
+import React from "react";
+import { createBrowserRouter } from "react-router-dom";
+import Home from "../pages/Home";
+import NotFound from "../pages/NotFound";
+import Test from "../pages/Test";
+import MainLayout from "../layouts/MainLayout";
+import ManageLayout from "../layouts/ManageLayout";
+import ListDemo from "../pages/manages/ListDemo";
+const routerConfig = createBrowserRouter([
+    {
+        path: '/',
+        element: <MainLayout />,
+        children: [
+            {
+                path: '/',
+                element: <Home />
+            },
+            {
+                path: 'test/:id',
+                element: <Test />
+            },
+            {
+                path: 'list',
+                element: <ManageLayout />,
+                children: [
+                    {
+                        path: '',
+                        element: <ListDemo/>
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        path: '*', // 404
+        element: <NotFound />
+    }
+])
+export default routerConfig
+```
+- App.tsx
+```tsx
+import React from 'react'
+import { RouterProvider } from 'react-router-dom'
+import routerConfig from './router'
+function App() {
+  return (
+    <>
+      <RouterProvider router={routerConfig}></RouterProvider>
+    </>
+  )
+}
+export default App
+```
+### 路由跳转
+- 使用`useNavigate`进行路由跳转；使用`useParams`及`useSearchParams`获取路由的params及search参数；
+- 使用`link`组件跳转;
+- 样例
+```tsx
+import { useNavigate } from 'react-router-dom'
+function Home() {
+    const { id = '' } = useParams()
+    const [searchParams] = useSearchParams()
+    console.log(searchParams.get('name')) // 获取name的search参数
+    const nav = useNavigate()
+    const navTo = (url: string) => {
+        // nav(url) 使用方式一
+        // 使用方式二
+        nav({
+            pathname: url
+        })
+        // nav(1/-1) // 前进/后退
+    }
+    return (
+        <>
+            <div>
+                <button onClick={() => {
+                    navTo('/test/123')    
+                }}>测试</button>
+            </div>
+        </>
+    )
+}
+export default Home
+```
+### 引入UI组件库
+- ant-design
+## React 表单组件
+### 表单组件
+- 受控组件：值同步到state并使用value属性；
+- 非受控组件：值不同步到state，使用defaultValue属性；
+## Mock
+
+- 搭建mock服务（作为临时的服务端）
+- API设计（Restful API）
+
+### 搭建mock服务
+
+- 技术选型
+  - 使用mock.js
+  - 使用nodejs服务 + mock.js
+  - 使用在线mock平台
+- React组件中引入mock.js
+- mock.js只能劫持XMLHttpRequest，不能劫持fetch
+  ```javascript
+  import Mock from 'mockjs'
+  Mock.mock('/api/test', 'get', () => {
+    return {
+      error: 0,
+      data: {
+        name: 'codeweeei'
+      }
+    }
+  })
+  ```
+
+- 注意要在生成环境上线前注释掉，否则线上请求也会被劫持；
+
+## Ajax
+
+- 使用Ajax和服务端通讯，并应用于现有功能
+
+- XMLHttpRequest 和 fetch
+  ```javascript
+  // XMLHttpRequest
+  let xhr = new XMLHttpRequest()
+  xhr.open('get', '/api/test', true)
+  xhr.onreadystatechange = function() {
+    if( xhr.readystate == 4 && xhr.status == 200) {
+      let result = JSON.parse(xhr.responseText)
+    }
+  }
+  xhr.send()
+  // fetch
+  fetch('/api/test').then(res = > {
+    res.json()
+  }).then(data => {
+    console.log(data)
+  })
+  ```
+
+- axios：基于promise的网络请求库
+  ```javascript
+  import axios from 'axios'
+  axios.get('/api/test').then(res => {
+    console.log(res)
+  })
+  ```
+
+## craco.js
+- create react app 配置重写
+- 解决开发跨域问题
+## API设计
+
+### 用户API
+
+- 注册
+- 登录
+- 用户信息
+
+### 问卷API
+
+- 创建问卷
+- 获取单个问卷
+- 更新问卷
+- 删除问卷
+- 查询问卷列表
+- 复制问卷
+
+## 封装axios
+
+- 根目录创建services
+  - ajax.ts
+  - question.ts
+    ```typescript
+    import axios from "axios";
+    import { message } from 'antd'
+    
+    const instance = axios.create({
+      timeout: 10 * 1000,
+      baseURL: 'http://127.0.0.1:4523/m1/2078094-0-default/'
+    })
+    
+    // 响应拦截器
+    instance.interceptors.response.use(
+      res => {
+        const resData = (res.data || {}) as ResType
+        const { errno, data, msg } = resData
+        if(errno !== 0) {
+          if(msg) {
+            message.error(msg)
+            return Promise.reject(msg)
+          }
+        }
+        return data as any
+      }
+    )
+    
+    export default instance
+    
+    export type ResType = {
+      errno: number,
+      data?: ResDataType,
+      msg: string
+    }
+    
+    export type ResDataType = {
+      [ key: string ]: any
+    }
+    ```
+
+```typescript
+import axios, { ResDataType } from "./ajax";
+
+// 获取单个问卷信息
+export async function getQuestionService(id:string):Promise<ResDataType> {
+  const url = `/api/question/${id}`
+  const data = (await axios.get(url)) as ResDataType
+  return data
+}
+```
+
+- 使用useRequest封装hooks
+  ```typescript
+  // import {useState, useEffect} from "react";
+  // import type {ResDataType} from '../services/ajax'
+  import { getQuestionService } from "../services/question";
+  import { useRequest } from 'ahooks'
+  
+  
+  const useQuestionDetail = (id: string) => {
+    // 正常写法：
+    // const [resLoading, setLoading] = useState(true)
+    // const [error, setError] = useState(false)
+    // const [data, setData] = useState<ResDataType>({})
+    // useEffect(() => {
+    //   getQuestionService(id).then(res => {
+    //     console.log(res)
+    //     setData(res)
+    //   }).catch(err => {
+    //     console.log(err)
+    //     setError(true)
+    //   }).finally(() => {
+    //     setLoading(false)
+    //   })
+    // }, [])
+    // return {
+    //   loading: resLoading,
+    //   error,
+    //   data
+    // }
+    
+    // 使用useRequest hook写法
+    async function load() {
+      const data = await getQuestionService(id)
+      return data
+    }
+    const { loading, error, data, run } = useRequest(load, {
+        manual: true // 手动触发（默认为false，在初次渲染时触发）
+    })
+    return { loading, error, data, run }
+  }
+  
+  export default useQuestionDetail
+  ```
+
+- 使用该hook
+  ```tsx
+  import React, {FC} from "react";
+  import useQuestionDetail from "../hooks/useQuestionDetail";
+  const Register:FC = () => {
+    const {loading, error, data, run} = useQuestionDetail('1234')
+    return (
+      <>
+        <h3>使用useRequest</h3>
+        <button onClick={run}>发送请求</button>
+        { loading ? <div>loading</div> : !error ? <div>{data?.title}</div> : <div>请求失败</div> }
+      </>
+    )
+  }
+  export default Register
+  ```
